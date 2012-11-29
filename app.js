@@ -15,7 +15,8 @@ var NodeScheme = new Schema({
         type : Date, 
         'default' : Date.now
     },
-    extra : [Schema.Types.Mixed] 
+    description : String,
+    extra_flags : [Schema.Types.Mixed] 
 });
 
 var FlowScheme = new Schema({
@@ -24,15 +25,17 @@ var FlowScheme = new Schema({
 });
     
     
-function addNode(user_url, user_ip, extra) {
+function addNode(user_url, user_ip, description, extra_flags) {
     var param_extra = extra || {};
     var param_user_url = user_url || '';
     var param_user_ip = user_ip || '';
+    var param_description = description || '';
         
     return {
         user_ip : param_user_ip,
         user_url : param_user_url,
-        extra : param_extra
+        description : param_description,
+        extra_flags : param_extra
     };
 }    
     
@@ -41,8 +44,9 @@ var Node = mongoose.model('Node', NodeScheme);
     
 
 var mynode = new Node({
-   user_ip : '200.244.21.45',
-   user_url : 'http://magictm.com.br/'
+    user_ip : '200.244.21.45',
+    user_url : 'http://magictm.com.br/',
+    description : 'Usuario acessou a home do site'
 });
 
 var myflow = new Flow({
@@ -66,9 +70,11 @@ myflow.save(myflow, function() {
 //            console.log(rs);
 //        });        
 });
-    
-    
-    
+
+Flow.find({}, function (err, rs) {
+    console.log(rs);
+});
+
 
 
 var app = express();
@@ -85,8 +91,8 @@ app.get('/newkey', function(req, res){
 
 
 
-app.get('/save', function(req, res) {
-    
+app.get('/newsession', function(req, res) {
+    // passar: Session_ID, USER_IP, USER_URL, DESCRIPTION
     });
 
 
