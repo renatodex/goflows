@@ -175,6 +175,35 @@ app.get('/newkey', function(req, res){
 });
 
 
+var ControllerNewSession = {
+    init : function(req, res, callin, callout) {
+        ConsoleResponse.header('newsession',req);
+        res.set('Content-Type', 'text/plain');
+        var params = req.query;
+        this.session_id = params['session_id'];
+        this.user_ip = params['user_ip'];
+        this.user_url = params['user_url'];
+        this.description = params['description'];
+        callin();
+    },
+    
+    validates : function(next, callin, callout) {
+        var query_data = [this.session_id, this.user_ip, this.user_url, this.description];
+        if(isAnyEmpty(query_data)) {
+            throw ErrorCode.REQUIRED_FIELDS;
+        }
+    },
+    
+    action_new : function() {
+        
+    },
+    
+    action_create : function() {
+        
+    }
+}
+
+
 app.get('/newsession', function(req, res) {
     ConsoleResponse.header('newsession',req);
     
@@ -189,7 +218,7 @@ app.get('/newsession', function(req, res) {
         if(isAnyEmpty([session_id, user_ip, user_url, description])) {
             throw ErrorCode.REQUIRED_FIELDS;
         }
-        
+
         var mynode = new Node({
             user_ip : user_ip,
             user_url : user_url,
@@ -201,18 +230,25 @@ app.get('/newsession', function(req, res) {
         });
         myflow.nodes.push(mynode);
         
-   
         myflow.save(function(err) {
-            if(err.code == ErrorCode.MONGO_DUPLICATED_ENTRY) {
-                console.error(err);
-                ConsoleResponse.error('Session already exists.');
-                throw ErrorCode.SESSION_ALREADY_EXISTS;
+            console.log('aqui');
+            if(err != null) {
+                console.log('teste');
+                if(err.code == ErrorCode.MONGO_DUPLICATED_ENTRY) {
+                    ConsoleResponse.error('Session already exists.');
+                    res.send(ErrorCode.SESSION_ALREADY_EXISTS);
+                    return;
+                } else {
+                    ConsoleResponse.error('Unknown Error');
+                    res.send(err.code);
+                    return;
+                }
             } else {
                 ConsoleResponse.success(['Created flow session...'].join(''));
                 console.purple(myflow);       
-                res.send('OK');                
+                res.send('OK');				
             }
-        });        
+        });      
     } catch (err) {
         ConsoleResponse.error(['RESPONSE=', err].join(''));
         res.send(err);
